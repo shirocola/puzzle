@@ -54,8 +54,10 @@ function createPieces(imageSrc) {
       piece.classList.add('piece');
       piece.draggable = true;
       piece.ondragstart = handleDragStart;
+      piece.ondragend = handleDragEnd;
       piece.ontouchstart = handleTouchStart;
       piece.ontouchmove = handleTouchMove;
+      piece.ontouchend = handleTouchEnd;
       piece.dataset.index = index;
 
       const canvas = document.createElement('canvas');
@@ -89,6 +91,11 @@ function shuffle(array) {
 // Drag and Drop functions
 function handleDragStart(event) {
   event.dataTransfer.setData('text/plain', event.target.dataset.index);
+  event.target.classList.add('dragging');
+}
+
+function handleDragEnd(event) {
+  event.target.classList.remove('dragging');
 }
 
 function allowDrop(event) {
@@ -184,6 +191,7 @@ function handleTouchStart(event) {
   const touch = event.touches[0];
   touchOffsetX = touch.clientX - touchPiece.getBoundingClientRect().left;
   touchOffsetY = touch.clientY - touchPiece.getBoundingClientRect().top;
+  touchPiece.classList.add('dragging');
 }
 
 function handleTouchMove(event) {
@@ -191,6 +199,13 @@ function handleTouchMove(event) {
     const touch = event.touches[0];
     touchPiece.style.left = `${touch.clientX - touchOffsetX}px`;
     touchPiece.style.top = `${touch.clientY - touchOffsetY}px`;
+  }
+}
+
+function handleTouchEnd(event) {
+  if (touchPiece) {
+    touchPiece.classList.remove('dragging');
+    touchPiece = null;
   }
 }
 
