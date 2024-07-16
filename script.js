@@ -8,6 +8,9 @@ let timer;
 let time = 0;
 let score = 0;
 let piecesPlaced = 0;
+let touchPiece = null;
+let touchOffsetX = 0;
+let touchOffsetY = 0;
 
 const totalPieces = 12;
 const rows = 3;
@@ -30,6 +33,7 @@ function createGrid() {
     cell.ondragover = allowDrop;
     cell.ondragenter = handleDragEnter;
     cell.ondragleave = handleDragLeave;
+    cell.ontouchend = handleDrop;
     grid.appendChild(cell);
   }
 }
@@ -50,6 +54,8 @@ function createPieces(imageSrc) {
       piece.classList.add('piece');
       piece.draggable = true;
       piece.ondragstart = handleDragStart;
+      piece.ontouchstart = handleTouchStart;
+      piece.ontouchmove = handleTouchMove;
       piece.dataset.index = index;
 
       const canvas = document.createElement('canvas');
@@ -127,7 +133,7 @@ function showModal() {
 function handleDrop(event) {
   event.preventDefault();
   event.target.style.border = '1px solid gray';
-  const pieceIndex = event.dataTransfer.getData('text/plain');
+  const pieceIndex = event.dataTransfer ? event.dataTransfer.getData('text/plain') : touchPiece.dataset.index;
   const targetIndex = event.target.dataset.index;
 
   if (event.target.classList.contains('grid-cell') && !event.target.hasChildNodes()) {
@@ -170,6 +176,22 @@ function startTimer() {
     const seconds = (time % 60).toString().padStart(2, '0');
     timerElement.textContent = `TIME: ${minutes}:${seconds}`;
   }, 1000);
+}
+
+// Touch event handlers
+function handleTouchStart(event) {
+  touchPiece = event.target;
+  const touch = event.touches[0];
+  touchOffsetX = touch.clientX - touchPiece.getBoundingClientRect().left;
+  touchOffsetY = touch.clientY - touchPiece.getBoundingClientRect().top;
+}
+
+function handleTouchMove(event) {
+  if (touchPiece) {
+    const touch = event.touches[0];
+    touchPiece.style.left = `${touch.clientX - touchOffsetX}px`;
+    touchPiece.style.top = `${touch.clientY - touchOffsetY}px`;
+  }
 }
 
 init();
