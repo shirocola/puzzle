@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jigsaw Puzzle</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>CITIZEN</h1>
+    <div id="info">
+      <div id="timer">TIME: 00:00</div>
+      <div id="score">SCORE: 0</div>
+    </div>
+    <div id="puzzle-container">
+      <div class="grid" id="grid"></div>
+      <div class="pieces" id="pieces"></div>
+    </div>
+    <!-- Modal for congratulations message -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Congratulations!</h2>
+        <p>You completed the puzzle.</p>
+        <button id="modal-button">OK</button>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
