@@ -3,9 +3,10 @@ const grid = document.getElementById('grid');
 const pieces = document.getElementById('pieces');
 const timerElement = document.getElementById('timer');
 const scoreElement = document.getElementById('score');
+const countdownElement = document.getElementById('countdown');
 
 let timer;
-let time = 0;
+let time = 120; // 2 minutes in seconds
 let score = 0;
 let piecesPlaced = 0;
 let touchPiece = null;
@@ -19,8 +20,7 @@ const cols = 4;
 // Initialize the game
 function init() {
   createGrid();
-  createPieces('assets/samsung.jpg');
-  startTimer();
+  loadRandomImage();
 }
 
 // Create grid cells
@@ -38,6 +38,49 @@ function createGrid() {
   }
 }
 
+// Load a random local image and start pre-game countdown
+function loadRandomImage() {
+  const images = ['assets/citizen_watch.jpg', 'assets/images.jpeg', 'assets/samsung.jpg'];
+  const randomImage = images[Math.floor(Math.random() * images.length)];
+  showImageBeforeSplit(randomImage);
+}
+
+// Show image before splitting it into pieces
+function showImageBeforeSplit(imageSrc) {
+  const img = new Image();
+  img.src = imageSrc;
+  img.onload = () => {
+    const imgDiv = document.createElement('div');
+    imgDiv.id = 'preview-image';
+    imgDiv.style.backgroundImage = `url(${imageSrc})`;
+
+    const grid = document.getElementById('grid');
+    const gridRect = grid.getBoundingClientRect();
+    imgDiv.style.width = `${gridRect.width}px`;
+    imgDiv.style.height = `${gridRect.height}px`;
+    imgDiv.style.top = `${gridRect.top}px`;
+    imgDiv.style.left = `${gridRect.left}px`;
+    imgDiv.style.position = 'absolute';
+
+    document.body.appendChild(imgDiv);
+
+    let countdown = 3;
+    countdownElement.textContent = countdown;
+    countdownElement.style.display = 'block';
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      countdownElement.textContent = countdown;
+      if (countdown === 0) {
+        clearInterval(countdownInterval);
+        countdownElement.style.display = 'none';
+        imgDiv.remove();
+        createPieces(imageSrc);
+        startGame();
+      }
+    }, 1000);
+  };
+}
+
 // Create puzzle pieces from the image
 function createPieces(imageSrc) {
   const img = new Image();
@@ -45,7 +88,7 @@ function createPieces(imageSrc) {
   img.onload = () => {
     const pieceWidth = img.width / cols;
     const pieceHeight = img.height / rows;
-    
+
     const indices = [...Array(totalPieces).keys()];
     shuffle(indices);
 
@@ -61,8 +104,8 @@ function createPieces(imageSrc) {
       piece.dataset.index = index;
 
       const canvas = document.createElement('canvas');
-      canvas.width = 100;
-      canvas.height = 100;
+      canvas.width = pieceWidth;
+      canvas.height = pieceHeight;
       const ctx = canvas.getContext('2d');
 
       const col = index % cols;
@@ -72,8 +115,8 @@ function createPieces(imageSrc) {
       piece.appendChild(canvas);
 
       piece.style.position = 'absolute';
-      piece.style.left = `${Math.random() * (pieces.clientWidth - 100)}px`;
-      piece.style.top = `${Math.random() * (pieces.clientHeight - 100)}px`;
+      piece.style.left = `${Math.random() * (pieces.clientWidth - pieceWidth)}px`;
+      piece.style.top = `${Math.random() * (pieces.clientHeight - pieceHeight)}px`;
 
       pieces.appendChild(piece);
     });
@@ -111,27 +154,29 @@ function handleDragLeave(event) {
   event.target.style.border = '1px solid gray';
 }
 
-function showModal() {
+// Show modal and reset game after closing
+function showModal(message) {
   const modal = document.getElementById('modal');
   const closeBtn = document.getElementsByClassName('close')[0];
   const modalButton = document.getElementById('modal-button');
+  modal.querySelector('h2').textContent = message;
 
   modal.style.display = 'block';
 
   closeBtn.onclick = function() {
     modal.style.display = 'none';
-    displayCompletedImage();
+    resetGame();
   };
 
   modalButton.onclick = function() {
     modal.style.display = 'none';
-    displayCompletedImage();
+    resetGame();
   };
 
   window.onclick = function(event) {
     if (event.target === modal) {
       modal.style.display = 'none';
-      displayCompletedImage();
+      resetGame();
     }
   };
 }
@@ -154,7 +199,7 @@ function handleDrop(event) {
       if (piecesPlaced === totalPieces) {
         clearInterval(timer);
         setTimeout(() => {
-          showModal();
+          showModal('Congratulations! You completed the puzzle.');
         }, 500);
       }
     } else {
@@ -175,14 +220,43 @@ function displayCompletedImage() {
   }, 500);
 }
 
-// Start the timer
+// Start the game timer and handle game over
+function startGame() {
+  startTimer();
+}
+
 function startTimer() {
+  timerElement.textContent = `TIME: 02:00`;
   timer = setInterval(() => {
-    time++;
+    time--;
     const minutes = Math.floor(time / 60).toString().padStart(2, '0');
     const seconds = (time % 60).toString().padStart(2, '0');
     timerElement.textContent = `TIME: ${minutes}:${seconds}`;
+
+    if (time <= 0) {
+      clearInterval(timer);
+      showModal('Game Over! Try again.');
+    }
   }, 1000);
+}
+
+// Reset the game
+function resetGame() {
+  // Clear the grid and pieces
+  grid.innerHTML = '';
+  pieces.innerHTML = '';
+
+  // Reset variables
+  time = 120; // 2 minutes in seconds
+  score = 0;
+  piecesPlaced = 0;
+
+  // Update score and timer elements
+  scoreElement.textContent = `SCORE: ${score}`;
+  timerElement.textContent = `TIME: 02:00`;
+
+  // Reinitialize the game
+  init();
 }
 
 // Touch event handlers
@@ -199,14 +273,47 @@ function handleTouchMove(event) {
     const touch = event.touches[0];
     touchPiece.style.left = `${touch.clientX - touchOffsetX}px`;
     touchPiece.style.top = `${touch.clientY - touchOffsetY}px`;
+    touchPiece.style.position = 'absolute'; // Ensure the piece follows the touch
   }
 }
 
 function handleTouchEnd(event) {
   if (touchPiece) {
     touchPiece.classList.remove('dragging');
+    checkPiecePlacement(touchPiece);
     touchPiece = null;
   }
+}
+
+// Check if the piece is placed correctly
+function checkPiecePlacement(piece) {
+  const index = piece.dataset.index;
+  const cells = document.querySelectorAll('.grid-cell');
+  cells.forEach(cell => {
+    const cellIndex = cell.dataset.index;
+    const cellRect = cell.getBoundingClientRect();
+    const pieceRect = piece.getBoundingClientRect();
+
+    if (cellIndex === index &&
+      pieceRect.left >= cellRect.left &&
+      pieceRect.top >= cellRect.top &&
+      pieceRect.right <= cellRect.right &&
+      pieceRect.bottom <= cellRect.bottom) {
+
+      piece.style.position = 'static';
+      piece.style.transform = 'none';
+      cell.appendChild(piece);
+      piecesPlaced++;
+      score += 10;
+      scoreElement.textContent = `SCORE: ${score}`;
+      if (piecesPlaced === totalPieces) {
+        clearInterval(timer);
+        setTimeout(() => {
+          showModal('Congratulations! You completed the puzzle.');
+        }, 500);
+      }
+    }
+  });
 }
 
 init();

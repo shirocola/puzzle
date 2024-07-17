@@ -1,9 +1,10 @@
+/* General Styles */
 body {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f0f0f0;
+  background: linear-gradient(to right, #1e3c72, #2a5298);
   font-family: Arial, sans-serif;
   flex-direction: column;
   margin: 0;
@@ -20,6 +21,7 @@ body {
 h1 {
   margin: 10px 0;
   font-size: 1.5em;
+  color: white;
 }
 
 #info {
@@ -31,6 +33,7 @@ h1 {
 
 #timer, #score {
   font-size: 1.2em;
+  color: white;
 }
 
 #puzzle-container {
@@ -110,15 +113,20 @@ h1 {
 /* Modal Styles */
 .modal {
   display: none;
-  position: relative;
-  z-index: 1000;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
   width: 100%;
-  margin-top: 20px;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
   background-color: #fefefe;
-  margin: auto;
+  margin: 15% auto;
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
@@ -159,4 +167,31 @@ h1 {
 
 #modal-button:hover {
   background-color: #45a049;
+}
+
+/* Countdown Styles */
+#preview-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px; /* same as the grid width */
+  height: 300px; /* same as the grid height */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 999;
+  border: 1px solid gray;
+}
+
+#countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3em;
+  color: white;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border-radius: 10px;
 }
