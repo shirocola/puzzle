@@ -12,6 +12,7 @@ let piecesPlaced = 0;
 let touchPiece = null;
 let touchOffsetX = 0;
 let touchOffsetY = 0;
+let initialTouchPosition = { left: 0, top: 0 };
 
 const totalPieces = 12;
 const rows = 3;
@@ -203,7 +204,8 @@ function handleDrop(event) {
         }, 500);
       }
     } else {
-      pieces.appendChild(piece);
+      piece.style.left = `${initialTouchPosition.left}px`;
+      piece.style.top = `${initialTouchPosition.top}px`;
     }
   }
 }
@@ -265,6 +267,10 @@ function handleTouchStart(event) {
   const touch = event.touches[0];
   touchOffsetX = touch.clientX - touchPiece.getBoundingClientRect().left;
   touchOffsetY = touch.clientY - touchPiece.getBoundingClientRect().top;
+  initialTouchPosition = {
+    left: parseFloat(touchPiece.style.left),
+    top: parseFloat(touchPiece.style.top),
+  };
   touchPiece.classList.add('dragging');
 }
 
@@ -289,6 +295,8 @@ function handleTouchEnd(event) {
 function checkPiecePlacement(piece) {
   const index = piece.dataset.index;
   const cells = document.querySelectorAll('.grid-cell');
+  let placed = false;
+
   cells.forEach(cell => {
     const cellIndex = cell.dataset.index;
     const cellRect = cell.getBoundingClientRect();
@@ -306,18 +314,21 @@ function checkPiecePlacement(piece) {
       piecesPlaced++;
       score += 10;
       scoreElement.textContent = `SCORE: ${score}`;
+      placed = true;
       if (piecesPlaced === totalPieces) {
         clearInterval(timer);
         setTimeout(() => {
           showModal('Congratulations! You completed the puzzle.');
         }, 500);
       }
-    } else {
-      // Reset piece position if not correctly placed
-      piece.style.left = `${Math.random() * (pieces.clientWidth - piece.clientWidth)}px`;
-      piece.style.top = `${Math.random() * (pieces.clientHeight - piece.clientHeight)}px`;
     }
   });
+
+  if (!placed) {
+    // Reset piece position if not correctly placed
+    piece.style.left = `${initialTouchPosition.left}px`;
+    piece.style.top = `${initialTouchPosition.top}px`;
+  }
 }
 
 init();
