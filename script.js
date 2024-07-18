@@ -312,6 +312,10 @@ function checkPiecePlacement(piece) {
           showModal('Congratulations! You completed the puzzle.');
         }, 500);
       }
+    } else {
+      // Reset piece position if not correctly placed
+      piece.style.left = `${Math.random() * (pieces.clientWidth - piece.clientWidth)}px`;
+      piece.style.top = `${Math.random() * (pieces.clientHeight - piece.clientHeight)}px`;
     }
   });
 }
